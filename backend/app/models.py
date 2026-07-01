@@ -38,7 +38,7 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: str = Field(index=True, unique=True)
+    email: str = Field(index=True, sa_column_kwargs={"unique": True})
     password_hash: str
     display_name: str | None = None
     avatar_url: str | None = None
