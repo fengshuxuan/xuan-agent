@@ -1,0 +1,36 @@
+[project]
+name = "xuan-agent-backend"
+version = "0.1.0"
+description = "SaaS-ready backend for Xuan Agent"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "sqlmodel>=0.0.22",
+  "pydantic-settings>=2.4.0",
+  "python-multipart>=0.0.9",
+  "passlib[bcrypt]>=1.7.4",
+  "bcrypt<5",
+  "python-jose[cryptography]>=3.3.0",
+  "email-validator>=2.2.0",
+  "openai>=1.100.0",
+  "alembic>=1.13.0",
+  "psycopg[binary]>=3.2.0",
+  "redis>=5.0.0",
+  "rq>=1.16.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "httpx>=0.27.0",
+  "ruff>=0.6.0"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
