@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Chat } from "../components/Chat";
+import { UsagePanel } from "../components/UsagePanel";
 import { createSession, login, register } from "../lib/api";
 
 export default function HomePage() {
@@ -10,6 +11,7 @@ export default function HomePage() {
   const [token, setToken] = useState<string>("");
   const [sessionId, setSessionId] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [usageRefreshKey, setUsageRefreshKey] = useState(0);
 
   async function authenticate(mode: "login" | "register") {
     setError("");
@@ -30,7 +32,14 @@ export default function HomePage() {
           <h1>Xuan Agent</h1>
           <p>多用户 SaaS MVP · 当前会话：{sessionId}</p>
         </header>
-        <Chat token={token} sessionId={sessionId} />
+        <div className="app-grid">
+          <Chat
+            token={token}
+            sessionId={sessionId}
+            onActivity={() => setUsageRefreshKey((value) => value + 1)}
+          />
+          <UsagePanel token={token} refreshKey={usageRefreshKey} />
+        </div>
       </main>
     );
   }
