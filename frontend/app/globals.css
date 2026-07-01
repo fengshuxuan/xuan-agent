@@ -20,7 +20,7 @@ textarea {
 }
 
 .container {
-  max-width: 1040px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 32px 20px;
 }
@@ -34,6 +34,13 @@ textarea {
 
 .hero {
   margin-bottom: 24px;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
 }
 
 .card,
@@ -147,6 +154,31 @@ button:disabled {
   margin: 14px 0;
 }
 
+.usage-panel {
+  position: sticky;
+  top: 20px;
+  margin: 0;
+}
+
+.usage-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid #eef0f5;
+}
+
+.usage-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+progress {
+  width: 100%;
+  height: 10px;
+}
+
 .tool-call {
   padding: 8px 0;
   border-top: 1px solid #eef0f5;
@@ -155,4 +187,14 @@ button:disabled {
 a {
   color: #2563eb;
   font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .usage-panel {
+    position: static;
+  }
 }
