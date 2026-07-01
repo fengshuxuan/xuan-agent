@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, chat, files, sessions, usage
+from app.api.routes import auth, chat, files, jobs, sessions, usage
 from app.core.config import get_settings
 from app.db.session import init_db
 
@@ -33,4 +33,5 @@ app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(sessions.router, prefix=settings.api_prefix)
 app.include_router(files.router, prefix=settings.api_prefix)
 app.include_router(chat.router, prefix=settings.api_prefix)
+app.include_router(jobs.router, prefix=settings.api_prefix)
 app.include_router(usage.router, prefix=settings.api_prefix)
