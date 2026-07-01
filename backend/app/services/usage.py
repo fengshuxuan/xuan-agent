@@ -5,8 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.core.config import get_settings
 from app.models import UsageRecord
+from app.services.plans import get_user_plan
 
 
 def current_month_start() -> datetime:
@@ -24,9 +24,9 @@ def get_monthly_usage(db: Session, user_id: UUID, metric: str) -> float:
 
 
 def assert_message_quota(db: Session, user_id: UUID) -> None:
-    settings = get_settings()
+    plan = get_user_plan(db, user_id)
     used = get_monthly_usage(db, user_id, "message")
-    if used >= settings.free_monthly_messages:
+    if used >= plan.monthly_message_limit:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="Monthly message quota exceeded. Upgrade plan or wait for next cycle.",
@@ -34,16 +34,26 @@ def assert_message_quota(db: Session, user_id: UUID) -> None:
 
 
 def assert_code_execution_quota(db: Session, user_id: UUID) -> None:
-    settings = get_settings()
+    plan = get_user_plan(db, user_id)
     used = get_monthly_usage(db, user_id, "code_execution")
-    if used >= settings.free_monthly_code_executions:
+    if used >= plan.monthly_code_execution_limit:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="Monthly code execution quota exceeded. Upgrade plan or wait for next cycle.",
         )
 
 
-def record_usage(db: Session, user_id: UUID, metric: str, quantity: float, metadata_json: str | None = None) -> None:
+def get_upload_size_limit(db: Session, user_id: UUID) -> int:
+    return get_user_plan(db, user_id).max_upload_file_bytes
+
+
+def record_usage(
+    db: Session,
+    user_id: UUID,
+    metric: str,
+    quantity: float,
+    metadata_json: str | None = None,
+) -> None:
     db.add(
         UsageRecord(
             user_id=user_id,
