@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { API_BASE_URL, ChatResponse, sendChat, uploadFile } from "../lib/api";
+import { ChatResponse, downloadFile, sendChat, uploadFile } from "../lib/api";
 
 type ChatMessage = {
   role: "user" | "assistant" | "system";
@@ -87,9 +87,13 @@ export function Chat({ token, sessionId }: { token: string; sessionId: string })
         <div className="panel">
           <h3>生成文件</h3>
           {lastResponse.files.map((file) => (
-            <a key={file.file_id} href={`${API_BASE_URL}${file.download_url}`} target="_blank">
+            <button
+              className="secondary"
+              key={file.file_id}
+              onClick={() => downloadFile(token, file.download_url, file.name)}
+            >
               下载 {file.name}
-            </a>
+            </button>
           ))}
         </div>
       ) : null}
