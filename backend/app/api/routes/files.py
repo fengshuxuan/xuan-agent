@@ -5,11 +5,10 @@ from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 
 from app.api.deps import get_current_user, get_owned_session
-from app.core.config import get_settings
 from app.db.session import get_db
 from app.models import FileAsset, FileSource, User
 from app.schemas.file import FileRead
-from app.services.usage import record_usage
+from app.services.usage import get_upload_size_limit, record_usage
 from app.services.workspace import WorkspaceGuard
 
 router = APIRouter(tags=["files"])
@@ -33,7 +32,7 @@ def upload_file(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> FileRead:
-    settings = get_settings()
+    max_file_bytes = get_upload_size_limit(db, current_user.id)
     session_obj = get_owned_session(session_id, db, current_user)
     guard = WorkspaceGuard(current_user.id, session_obj.workspace_id, session_obj.id)
     target_path = guard.upload_path(uploaded_file.filename or "uploaded-file")
@@ -42,11 +41,11 @@ def upload_file(
     with target_path.open("wb") as buffer:
         while chunk := uploaded_file.file.read(1024 * 1024):
             total_bytes += len(chunk)
-            if total_bytes > settings.max_upload_file_bytes:
+            if total_bytes > max_file_bytes:
                 target_path.unlink(missing_ok=True)
                 raise HTTPException(
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                    detail="Uploaded file exceeds the maximum allowed size.",
+                    detail="Uploaded file exceeds the maximum allowed size for your plan.",
                 )
             buffer.write(chunk)
 
