@@ -1,14 +1,15 @@
-import shutil
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 
 from app.api.deps import get_current_user, get_owned_session
+from app.core.config import get_settings
 from app.db.session import get_db
 from app.models import FileAsset, FileSource, User
 from app.schemas.file import FileRead
+from app.services.usage import record_usage
 from app.services.workspace import WorkspaceGuard
 
 router = APIRouter(tags=["files"])
@@ -32,12 +33,22 @@ def upload_file(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> FileRead:
+    settings = get_settings()
     session_obj = get_owned_session(session_id, db, current_user)
     guard = WorkspaceGuard(current_user.id, session_obj.workspace_id, session_obj.id)
     target_path = guard.upload_path(uploaded_file.filename or "uploaded-file")
 
+    total_bytes = 0
     with target_path.open("wb") as buffer:
-        shutil.copyfileobj(uploaded_file.file, buffer)
+        while chunk := uploaded_file.file.read(1024 * 1024):
+            total_bytes += len(chunk)
+            if total_bytes > settings.max_upload_file_bytes:
+                target_path.unlink(missing_ok=True)
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail="Uploaded file exceeds the maximum allowed size.",
+                )
+            buffer.write(chunk)
 
     asset = FileAsset(
         user_id=current_user.id,
@@ -50,6 +61,7 @@ def upload_file(
         source=FileSource.upload,
     )
     db.add(asset)
+    record_usage(db, current_user.id, "uploaded_file_bytes", asset.size_bytes)
     db.commit()
     db.refresh(asset)
     return to_file_read(asset)
