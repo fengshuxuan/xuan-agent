@@ -34,6 +34,12 @@ class JobStatus(str, StrEnum):
     canceled = "canceled"
 
 
+class SubscriptionStatus(str, StrEnum):
+    active = "active"
+    past_due = "past_due"
+    canceled = "canceled"
+
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
@@ -43,6 +49,39 @@ class User(SQLModel, table=True):
     display_name: str | None = None
     avatar_url: str | None = None
     status: UserStatus = Field(default=UserStatus.active)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
+class Plan(SQLModel, table=True):
+    __tablename__ = "plans"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    code: str = Field(index=True, sa_column_kwargs={"unique": True})
+    name: str
+    monthly_message_limit: int
+    monthly_code_execution_limit: int
+    storage_bytes_limit: int
+    max_upload_file_bytes: int
+    price_cents: int = 0
+    currency: str = "USD"
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=utc_now)
+
+
+class Subscription(SQLModel, table=True):
+    __tablename__ = "subscriptions"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(index=True, foreign_key="users.id")
+    organization_id: UUID | None = Field(default=None, index=True)
+    plan_code: str = Field(default="free", index=True)
+    status: SubscriptionStatus = Field(default=SubscriptionStatus.active)
+    provider: str = "manual"
+    provider_customer_id: str | None = None
+    provider_subscription_id: str | None = None
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
