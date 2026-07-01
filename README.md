@@ -34,20 +34,26 @@ saas-mvp-code
 - 文件鉴权下载
 - tenant-scoped 文件工具
 - Docker Python 沙箱工具
-- 规则版 Agent Runtime
+- 豆包 `doubao-seed-2.1-pro` 默认模型配置
+- OpenAI-compatible Chat Completions Tool Calling runner
+- 规则版 Agent Runtime fallback
 - 工具调用记录
-- usage 记录
+- usage 记录与基础月度配额
+- PostgreSQL + Alembic migration 骨架
+- Redis/RQ worker 骨架
 - Next.js 最小登录 / 聊天 UI
 
 ## 推荐技术栈
 
 - Frontend: Next.js / React / TypeScript
 - Backend: FastAPI / Python
-- Database: SQLite for MVP，后续 PostgreSQL
-- Agent Runtime: 规则版工具路由，后续替换为 LLM Tool Calling
+- Model: Doubao `doubao-seed-2.1-pro`
+- Database: SQLite for local MVP，PostgreSQL for SaaS
+- Migration: Alembic
+- Agent Runtime: Doubao Tool Calling + SaaS-safe Tool Registry
 - Sandbox: Docker 隔离 Python 执行环境
 - Storage: 本地 workspace，后续可换 MinIO / S3
-- Queue: 后续 Redis / Celery / RQ
+- Queue: Redis / RQ
 
 ## 目录结构
 
@@ -62,6 +68,21 @@ xuan-agent/
 ```
 
 ## 本地启动
+
+复制环境变量：
+
+```bash
+cp .env.example .env
+```
+
+启用豆包模型时配置：
+
+```env
+LLM_PROVIDER=doubao
+DOUBAO_API_KEY=你的火山方舟 API Key
+DOUBAO_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+DOUBAO_MODEL=doubao-seed-2.1-pro
+```
 
 先构建 Python 沙箱：
 
@@ -93,6 +114,26 @@ npm run dev
 http://localhost:3000
 ```
 
+## PostgreSQL / Redis
+
+```bash
+docker compose up postgres redis
+```
+
+使用 PostgreSQL 时：
+
+```env
+DATABASE_URL=postgresql+psycopg://xuan_agent:xuan_agent@localhost:5432/xuan_agent
+REDIS_URL=redis://localhost:6379/0
+```
+
+执行迁移：
+
+```bash
+cd backend
+alembic upgrade head
+```
+
 ## 测试示例
 
 注册登录后，可以尝试：
@@ -121,22 +162,21 @@ print(1 + 1)
 - 默认禁止危险 shell 命令
 - Python 执行必须限制时间、内存、文件目录
 - 用户上传文件内容只能作为数据，不能作为系统指令
+- 模型只能选择工具，真正工具执行由后端 Tool Registry 完成
 
 ## 当前限制
 
-- Agent Runtime 暂时是规则路由，不是真正 LLM Tool Calling
-- 数据库默认 SQLite，生产应换 PostgreSQL + Alembic
-- docker-compose 下沙箱的宿主机路径映射仍需进一步完善
-- 暂未支持异步 job worker
-- 暂未支持团队、计费和配额
+- chat API 仍同步执行，异步 job 只是骨架
+- docker compose 出于安全考虑没有挂载 Docker socket，因此沙箱建议先用本机后端方式测试
+- 暂未支持团队和计费
+- 暂未支持 OAuth / 邮箱验证
 
 ## 后续规划
 
-- 接入真实模型 API 与 Tool Calling
+- 将 chat/file processing 改成异步 job
 - 增加流式响应
-- 增加 PostgreSQL + Alembic migration
-- 增加 Redis worker 和长任务状态
-- 增加用量配额和套餐限制
+- 增加前端 usage 展示
+- 增加套餐和配额策略表
 - 增加 MCP 工具接入层
 - 增加多 Agent 分工
 - 增加团队空间和订阅计费
