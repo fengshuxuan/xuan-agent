@@ -20,11 +20,17 @@ class Settings(BaseSettings):
     sandbox_memory: str = "512m"
     sandbox_cpus: str = "1"
 
-    llm_provider: str = "openai"
-    openai_api_key: str | None = None
-    openai_model: str = "gpt-5.5"
+    llm_provider: str = "doubao"
     llm_tool_calling_enabled: bool = True
     llm_max_tool_rounds: int = 3
+
+    doubao_api_key: str | None = None
+    doubao_base_url: str = "https://ark.cn-beijing.volces.com/api/v3"
+    doubao_model: str = "doubao-seed-2.1-pro"
+
+    # Optional fallback / compatibility settings.
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-5.5"
 
     free_monthly_messages: int = 100
     free_monthly_code_executions: int = 20
