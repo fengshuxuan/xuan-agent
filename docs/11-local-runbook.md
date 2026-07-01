@@ -8,13 +8,32 @@
 saas-mvp-code
 ```
 
+## 环境变量
+
+复制环境变量模板：
+
+```bash
+cp .env.example .env
+```
+
+如果要启用豆包模型工具调用，需要配置：
+
+```env
+LLM_PROVIDER=doubao
+DOUBAO_API_KEY=你的火山方舟 API Key
+DOUBAO_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+DOUBAO_MODEL=doubao-seed-2.1-pro
+```
+
+如果不配置 `DOUBAO_API_KEY`，后端会自动使用规则版 fallback，方便本地开发。
+
 ## 先构建 Python 沙箱
 
 ```bash
 docker build -t xuan-agent-python-sandbox:latest ./sandbox
 ```
 
-## 后端启动
+## 后端启动，SQLite 简单模式
 
 ```bash
 cd backend
@@ -30,6 +49,34 @@ uvicorn app.main:app --reload --port 8000
 curl http://localhost:8000/health
 ```
 
+## PostgreSQL + Redis 模式
+
+启动依赖：
+
+```bash
+docker compose up postgres redis
+```
+
+设置：
+
+```env
+DATABASE_URL=postgresql+psycopg://xuan_agent:xuan_agent@localhost:5432/xuan_agent
+REDIS_URL=redis://localhost:6379/0
+```
+
+执行迁移：
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+再启动后端：
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
 ## 前端启动
 
 ```bash
@@ -42,6 +89,15 @@ npm run dev
 
 ```text
 http://localhost:3000
+```
+
+## Worker 启动
+
+当前 chat API 仍然同步执行。Redis/RQ worker 已经有基础骨架，可用于下一阶段长任务异步化。
+
+```bash
+cd backend
+rq worker xuan-agent --url redis://localhost:6379/0
 ```
 
 ## 测试流程
@@ -73,21 +129,26 @@ print(1 + 1)
 - 鉴权下载
 - tenant-scoped 文件工具
 - Docker Python 沙箱执行
+- 豆包 `doubao-seed-2.1-pro` 工具调用配置
+- OpenAI-compatible Chat Completions runner
+- 规则版 fallback
 - 工具调用记录
 - message / usage 记录
+- monthly message / code execution quota
+- PostgreSQL + Alembic migration 骨架
+- Redis/RQ worker 骨架
 
 ## 当前限制
 
-- Agent Runtime 还是规则路由，不是真正 LLM Tool Calling
-- 数据库默认 SQLite，生产应换 PostgreSQL
-- docker-compose 中后端容器调用宿主机 Docker 还需要进一步处理 host path 映射
-- 暂未支持异步 job worker
+- 还没有把 chat API 改成异步 job 模式
+- docker compose 出于安全考虑没有挂载 Docker socket，因此沙箱建议先用本机后端方式测试
 - 暂未支持团队和计费
+- 暂未支持 OAuth / 邮箱验证
 
 ## 下一步
 
-1. 接入真实 LLM Tool Calling
-2. 增加 PostgreSQL + Alembic migration
-3. 增加 Redis worker
-4. 增加用量配额限制
+1. 将 chat/file processing 改成异步 job
+2. 增加前端 usage 展示
+3. 增加 PostgreSQL migration CI 测试
+4. 增加套餐和配额策略表
 5. 增加 OAuth / 邮箱验证
