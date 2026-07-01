@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 from uuid import UUID
 
@@ -8,7 +9,7 @@ from app.agent.tools import ToolRegistry
 from app.core.config import get_settings
 from app.llm.openai_compatible_chat import OpenAICompatibleChatToolRunner
 from app.llm.openai_responses import OpenAIResponsesToolRunner
-from app.models import AgentSession, FileAsset, FileSource, Message, MessageRole, ToolCall, UsageRecord, utc_now
+from app.models import AgentSession, FileAsset, FileSource, Message, MessageRole, ToolCall, utc_now
 from app.services.usage import assert_code_execution_quota, assert_message_quota, record_usage
 
 
@@ -97,6 +98,11 @@ class AgentRuntime:
                 ),
             )
             reply = llm_result.reply
+            self._record_llm_usage(
+                prompt_tokens=llm_result.prompt_tokens,
+                completion_tokens=llm_result.completion_tokens,
+                total_tokens=llm_result.total_tokens,
+            )
         else:
             runner = OpenAIResponsesToolRunner()
             llm_result = runner.run(
@@ -189,7 +195,7 @@ class AgentRuntime:
             self.db.add(asset)
             generated_files.append(asset)
             try:
-                size_bytes = __import__("pathlib").Path(result["path"]).stat().st_size
+                size_bytes = Path(result["path"]).stat().st_size
             except OSError:
                 size_bytes = 0
             record_usage(self.db, self.user_id, "generated_file_bytes", size_bytes)
@@ -230,6 +236,14 @@ class AgentRuntime:
             self.db.commit()
             self.db.refresh(call)
         return result, call
+
+    def _record_llm_usage(self, prompt_tokens: int, completion_tokens: int, total_tokens: int) -> None:
+        if prompt_tokens:
+            record_usage(self.db, self.user_id, "llm_prompt_tokens", prompt_tokens)
+        if completion_tokens:
+            record_usage(self.db, self.user_id, "llm_completion_tokens", completion_tokens)
+        if total_tokens:
+            record_usage(self.db, self.user_id, "llm_total_tokens", total_tokens)
 
     def _system_prompt(self) -> str:
         return f"""
