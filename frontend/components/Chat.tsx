@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { ChatResponse, downloadFile, sendChat, uploadFile } from "../lib/api";
 
@@ -48,7 +49,7 @@ export function Chat({
     }
   }
 
-  async function onUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function onUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     setLoading(true);
