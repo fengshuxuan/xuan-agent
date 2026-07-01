@@ -87,3 +87,21 @@ export async function uploadFile(token: string, sessionId: string, file: File) {
   }
   return response.json();
 }
+
+export async function downloadFile(token: string, downloadUrl: string, filename: string) {
+  const response = await fetch(`${API_BASE_URL}${downloadUrl}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
