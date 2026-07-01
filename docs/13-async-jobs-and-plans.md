@@ -40,6 +40,8 @@ rq worker xuan-agent --url redis://localhost:6379/0
   → 前端轮询 /api/jobs/{job_id}
 ```
 
+当前前端默认仍使用同步 chat，下一步会把前端切换为 async job polling。
+
 ## 套餐模型
 
 新增表：
