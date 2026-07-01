@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session
 
 from app.api.routes import auth, chat, files, jobs, sessions, usage
 from app.core.config import get_settings
-from app.db.session import init_db
+from app.db.session import engine, init_db
+from app.services.plans import seed_default_plans
 
 settings = get_settings()
 
@@ -22,6 +24,8 @@ app.add_middleware(
 def on_startup() -> None:
     settings.workspace_root.mkdir(parents=True, exist_ok=True)
     init_db()
+    with Session(engine) as db:
+        seed_default_plans(db)
 
 
 @app.get("/health")
