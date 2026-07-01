@@ -91,9 +91,37 @@ npm run dev
 http://localhost:3000
 ```
 
+前端已包含：
+
+- 登录 / 注册
+- Chat UI
+- 文件上传
+- 工具调用展示
+- 生成文件下载
+- 用量面板
+
 ## Worker 启动
 
-当前 chat API 仍然同步执行。Redis/RQ worker 已经有基础骨架，可用于下一阶段长任务异步化。
+同步接口：
+
+```text
+POST /api/sessions/{session_id}/chat
+```
+
+异步接口：
+
+```text
+POST /api/sessions/{session_id}/chat/async
+GET  /api/jobs/{job_id}
+```
+
+启用异步模式：
+
+```env
+WORKER_ENABLED=true
+```
+
+启动 worker：
 
 ```bash
 cd backend
@@ -104,7 +132,7 @@ rq worker xuan-agent --url redis://localhost:6379/0
 
 1. 打开前端
 2. 用 demo@example.com / password123 注册
-3. 系统自动创建 session
+3. 系统自动创建 session 和 free subscription
 4. 上传一个 txt / csv 文件
 5. 输入：`列出有哪些文件`
 6. 输入：
@@ -117,6 +145,7 @@ print(1 + 1)
 
 7. 输入：`生成文件`
 8. 点击生成文件下载按钮
+9. 观察右侧用量面板变化
 
 ## 当前 MVP 已支持
 
@@ -134,21 +163,25 @@ print(1 + 1)
 - 规则版 fallback
 - 工具调用记录
 - message / usage 记录
+- llm token usage 记录
 - monthly message / code execution quota
+- Plan / Subscription 套餐表
+- free / pro 默认套餐 seed
 - PostgreSQL + Alembic migration 骨架
-- Redis/RQ worker 骨架
+- Redis/RQ async chat worker 骨架
+- GitHub Actions CI
 
 ## 当前限制
 
-- 还没有把 chat API 改成异步 job 模式
+- 默认前端仍然使用同步 chat；async job API 已准备好
 - docker compose 出于安全考虑没有挂载 Docker socket，因此沙箱建议先用本机后端方式测试
-- 暂未支持团队和计费
+- 暂未支持团队和真实支付
 - 暂未支持 OAuth / 邮箱验证
 
 ## 下一步
 
-1. 将 chat/file processing 改成异步 job
-2. 增加前端 usage 展示
-3. 增加 PostgreSQL migration CI 测试
-4. 增加套餐和配额策略表
-5. 增加 OAuth / 邮箱验证
+1. 前端切换 async job polling
+2. 增加套餐管理 API
+3. 增加支付接入
+4. 增加 MCP 工具接入层
+5. 增加 organization/team 空间
