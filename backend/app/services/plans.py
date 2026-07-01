@@ -1,6 +1,8 @@
+from uuid import UUID
+
 from sqlmodel import Session, select
 
-from app.models import Plan
+from app.models import Plan, Subscription, SubscriptionStatus
 
 DEFAULT_PLANS = [
     {
@@ -33,3 +35,27 @@ def seed_default_plans(db: Session) -> None:
             continue
         db.add(Plan(**payload))
     db.commit()
+
+
+def get_active_subscription(db: Session, user_id: UUID) -> Subscription | None:
+    return db.exec(
+        select(Subscription).where(
+            Subscription.user_id == user_id,
+            Subscription.status == SubscriptionStatus.active,
+        )
+    ).first()
+
+
+def get_user_plan(db: Session, user_id: UUID) -> Plan:
+    subscription = get_active_subscription(db, user_id)
+    plan_code = subscription.plan_code if subscription else "free"
+    plan = db.exec(select(Plan).where(Plan.code == plan_code, Plan.is_active == True)).first()  # noqa: E712
+    if plan:
+        return plan
+
+    fallback = db.exec(select(Plan).where(Plan.code == "free")).first()
+    if fallback:
+        return fallback
+
+    # Last-resort object for tests before seed_default_plans has run.
+    return Plan(**DEFAULT_PLANS[0])
