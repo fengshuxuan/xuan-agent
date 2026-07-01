@@ -20,6 +20,19 @@ class Settings(BaseSettings):
     sandbox_memory: str = "512m"
     sandbox_cpus: str = "1"
 
+    llm_provider: str = "openai"
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-5.5"
+    llm_tool_calling_enabled: bool = True
+    llm_max_tool_rounds: int = 3
+
+    free_monthly_messages: int = 100
+    free_monthly_code_executions: int = 20
+    max_upload_file_bytes: int = 10 * 1024 * 1024
+
+    redis_url: str = "redis://localhost:6379/0"
+    worker_enabled: bool = False
+
     cors_origins: list[str] = ["http://localhost:3000"]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
