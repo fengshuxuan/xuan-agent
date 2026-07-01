@@ -16,6 +16,9 @@ class ChatToolCallEvent:
 class ChatToolRunResult:
     reply: str
     tool_events: list[ChatToolCallEvent] = field(default_factory=list)
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
 
 class OpenAICompatibleChatToolRunner:
@@ -43,6 +46,9 @@ class OpenAICompatibleChatToolRunner:
         ]
         chat_tools = [self._to_chat_completion_tool(tool) for tool in tools]
         tool_events: list[ChatToolCallEvent] = []
+        prompt_tokens = 0
+        completion_tokens = 0
+        total_tokens = 0
 
         for _ in range(max_tool_rounds):
             completion = self.client.chat.completions.create(
@@ -51,6 +57,11 @@ class OpenAICompatibleChatToolRunner:
                 tools=chat_tools,
                 tool_choice="auto",
             )
+            if completion.usage:
+                prompt_tokens += completion.usage.prompt_tokens or 0
+                completion_tokens += completion.usage.completion_tokens or 0
+                total_tokens += completion.usage.total_tokens or 0
+
             message = completion.choices[0].message
             messages.append(message.model_dump(exclude_none=True))
 
@@ -58,6 +69,9 @@ class OpenAICompatibleChatToolRunner:
                 return ChatToolRunResult(
                     reply=message.content or "已完成。",
                     tool_events=tool_events,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    total_tokens=total_tokens,
                 )
 
             for tool_call in message.tool_calls:
@@ -86,6 +100,9 @@ class OpenAICompatibleChatToolRunner:
         return ChatToolRunResult(
             reply="工具调用轮次已达到上限，请缩小任务范围后重试。",
             tool_events=tool_events,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=total_tokens,
         )
 
     def _to_chat_completion_tool(self, tool: dict[str, Any]) -> dict[str, Any]:
