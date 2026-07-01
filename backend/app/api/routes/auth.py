@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from app.api.deps import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
-from app.models import User, Workspace
+from app.models import Subscription, User, Workspace
 from app.schemas.auth import LoginRequest, MeResponse, RegisterRequest, TokenResponse, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -30,7 +30,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
         name="Default Workspace",
         storage_root=f"users/{user.id}/workspaces/default",
     )
+    subscription = Subscription(user_id=user.id, plan_code="free")
     db.add(workspace)
+    db.add(subscription)
     db.commit()
 
     token = create_access_token(subject=str(user.id))
