@@ -8,7 +8,15 @@ type ChatMessage = {
   content: string;
 };
 
-export function Chat({ token, sessionId }: { token: string; sessionId: string }) {
+export function Chat({
+  token,
+  sessionId,
+  onActivity,
+}: {
+  token: string;
+  sessionId: string;
+  onActivity?: () => void;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "system",
@@ -29,6 +37,7 @@ export function Chat({ token, sessionId }: { token: string; sessionId: string })
       const response = await sendChat(token, sessionId, message);
       setLastResponse(response);
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
+      onActivity?.();
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -49,6 +58,7 @@ export function Chat({ token, sessionId }: { token: string; sessionId: string })
         ...prev,
         { role: "system", content: `已上传文件：${asset.original_name}` },
       ]);
+      onActivity?.();
     } catch (error) {
       setMessages((prev) => [
         ...prev,
