@@ -12,6 +12,14 @@ export type SessionRead = {
   status: string;
 };
 
+export type UsageResponse = {
+  items: Array<{
+    metric: string;
+    used: number;
+    limit?: number | null;
+  }>;
+};
+
 export type ChatResponse = {
   session_id: string;
   reply: string;
@@ -65,6 +73,10 @@ export function createSession(token: string, title = "New Chat") {
     method: "POST",
     body: JSON.stringify({ title }),
   }, token);
+}
+
+export function getUsage(token: string) {
+  return request<UsageResponse>("/api/usage/me", {}, token);
 }
 
 export function sendChat(token: string, sessionId: string, message: string) {
