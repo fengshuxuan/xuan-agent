@@ -161,7 +161,7 @@ class AgentRuntime:
         else:
             reply = (
                 "我已经收到你的消息。当前未配置 DOUBAO_API_KEY，因此使用规则版 MVP。"
-                " 配置 DOUBAO_API_KEY 后，会启用 doubao-seed-2.1-pro 工具调用。"
+                " 配置 DOUBAO_API_KEY 后，会启用 doubao-seed-2-1-pro-260628 工具调用。"
             )
 
         return RuntimeResult(reply=reply, tool_calls=tool_calls, files=generated_files)

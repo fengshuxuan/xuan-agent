@@ -22,7 +22,7 @@ cp .env.example .env
 LLM_PROVIDER=doubao
 DOUBAO_API_KEY=你的火山方舟 API Key
 DOUBAO_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-DOUBAO_MODEL=doubao-seed-2.1-pro
+DOUBAO_MODEL=doubao-seed-2-1-pro-260628
 ```
 
 如果不配置 `DOUBAO_API_KEY`，后端会自动使用规则版 fallback，方便本地开发。
@@ -158,7 +158,7 @@ print(1 + 1)
 - 鉴权下载
 - tenant-scoped 文件工具
 - Docker Python 沙箱执行
-- 豆包 `doubao-seed-2.1-pro` 工具调用配置
+- 豆包 `doubao-seed-2-1-pro-260628` 工具调用配置
 - OpenAI-compatible Chat Completions runner
 - 规则版 fallback
 - 工具调用记录

@@ -9,24 +9,24 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class UserStatus(str, StrEnum):
+class UserStatus(StrEnum):
     active = "active"
     disabled = "disabled"
 
 
-class MessageRole(str, StrEnum):
+class MessageRole(StrEnum):
     user = "user"
     assistant = "assistant"
     system = "system"
     tool = "tool"
 
 
-class FileSource(str, StrEnum):
+class FileSource(StrEnum):
     upload = "upload"
     generated = "generated"
 
 
-class JobStatus(str, StrEnum):
+class JobStatus(StrEnum):
     queued = "queued"
     running = "running"
     succeeded = "succeeded"
@@ -34,7 +34,7 @@ class JobStatus(str, StrEnum):
     canceled = "canceled"
 
 
-class SubscriptionStatus(str, StrEnum):
+class SubscriptionStatus(StrEnum):
     active = "active"
     past_due = "past_due"
     canceled = "canceled"

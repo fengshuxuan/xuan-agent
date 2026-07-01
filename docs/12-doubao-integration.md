@@ -5,7 +5,7 @@
 项目默认模型改为：
 
 ```text
-doubao-seed-2.1-pro
+doubao-seed-2-1-pro-260628
 ```
 
 默认 provider：
@@ -22,7 +22,7 @@ LLM_TOOL_CALLING_ENABLED=true
 LLM_MAX_TOOL_ROUNDS=3
 DOUBAO_API_KEY=你的火山方舟 API Key
 DOUBAO_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-DOUBAO_MODEL=doubao-seed-2.1-pro
+DOUBAO_MODEL=doubao-seed-2-1-pro-260628
 ```
 
 ## 接入方式

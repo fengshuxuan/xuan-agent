@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     doubao_api_key: str | None = None
     doubao_base_url: str = "https://ark.cn-beijing.volces.com/api/v3"
-    doubao_model: str = "doubao-seed-2.1-pro"
+    doubao_model: str = "doubao-seed-2-1-pro-260628"
 
     # Optional fallback / compatibility settings.
     openai_api_key: str | None = None
