@@ -39,9 +39,13 @@ saas-mvp-code
 - 规则版 Agent Runtime fallback
 - 工具调用记录
 - usage 记录与基础月度配额
+- Plan / Subscription 套餐表
+- 新用户自动绑定 free 订阅
 - PostgreSQL + Alembic migration 骨架
-- Redis/RQ worker 骨架
+- Redis/RQ async chat job 骨架
 - Next.js 最小登录 / 聊天 UI
+- 前端用量展示面板
+- GitHub Actions CI
 
 ## 推荐技术栈
 
@@ -134,6 +138,13 @@ cd backend
 alembic upgrade head
 ```
 
+异步 Worker：
+
+```bash
+cd backend
+rq worker xuan-agent --url redis://localhost:6379/0
+```
+
 ## 测试示例
 
 注册登录后，可以尝试：
@@ -166,17 +177,17 @@ print(1 + 1)
 
 ## 当前限制
 
-- chat API 仍同步执行，异步 job 只是骨架
+- 默认前端仍调用同步 chat，async job 接口已准备好
 - docker compose 出于安全考虑没有挂载 Docker socket，因此沙箱建议先用本机后端方式测试
-- 暂未支持团队和计费
+- 暂未支持团队和真实支付
 - 暂未支持 OAuth / 邮箱验证
 
 ## 后续规划
 
-- 将 chat/file processing 改成异步 job
+- 将前端 chat 切换为 async job polling
 - 增加流式响应
-- 增加前端 usage 展示
-- 增加套餐和配额策略表
+- 增加套餐管理接口
+- 增加支付接入
 - 增加 MCP 工具接入层
 - 增加多 Agent 分工
 - 增加团队空间和订阅计费
